@@ -1,0 +1,30 @@
+name: 'PIE Mirror Action'
+description: 'Sync, validate, and release PIE-compatible PHP extension mirrors'
+
+inputs:
+  mode:
+    description: 'Action mode: sync | validate'
+    required: true
+  github-token:
+    description: 'GitHub token with contents:write permission'
+    required: true
+  max-versions:
+    description: 'Maximum number of versions to sync per run (0 = unlimited)'
+    required: false
+    default: '0'
+  dry-run:
+    description: 'Log what would happen without making changes'
+    required: false
+    default: 'false'
+
+outputs:
+  synced-versions:
+    description: 'JSON array of version strings that were synced'
+  latest-version:
+    description: 'The highest version synced, or empty string'
+  validation-passed:
+    description: '"true" or "false" (validate mode only)'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
