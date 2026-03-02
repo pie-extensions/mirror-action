@@ -23,7 +23,7 @@ For each new version:
 
 Checks that the mirror repo is PIE-compliant:
 - `.pie-mirror.yml` has required fields
-- `composer.json` has `type: "php-ext"`, `extra.php-ext.extension-name`, `version`
+- `composer.json` has `type: "php-ext"`, `php-ext.extension-name`, `version`
 - Source directory exists
 
 ## Inputs

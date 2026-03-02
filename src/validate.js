@@ -39,10 +39,10 @@ export async function runValidate() {
                 );
             }
 
-            // extra.php-ext.extension-name required
-            const extName = composer.extra?.['php-ext']?.['extension-name'];
+            // php-ext.extension-name required
+            const extName = composer['php-ext']?.['extension-name'];
             if (!extName) {
-                errors.push('composer.json: "extra.php-ext.extension-name" is required');
+                errors.push('composer.json: "php-ext.extension-name" is required');
             }
 
             // version field required
