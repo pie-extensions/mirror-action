@@ -1,9 +1,9 @@
 name: 'PIE Mirror Action'
-description: 'Sync, validate, and release PIE-compatible PHP extension mirrors'
+description: 'Sync, validate, build, and release PIE-compatible PHP extension mirrors'
 
 inputs:
   mode:
-    description: 'Action mode: sync | validate'
+    description: 'Action mode: sync | validate | build'
     required: true
   github-token:
     description: 'GitHub token with contents:write permission'
@@ -16,15 +16,55 @@ inputs:
     description: 'Log what would happen without making changes'
     required: false
     default: 'false'
+  configure-flags:
+    description: 'Flags passed to ./configure during build (build mode only)'
+    required: false
+    default: ''
+  release-tag:
+    description: 'Release tag to upload binary to (build mode only)'
+    required: false
+    default: ''
 
 outputs:
   synced-versions:
     description: 'JSON array of version strings that were synced'
+    value: ${{ steps.node.outputs.synced-versions }}
   latest-version:
     description: 'The highest version synced, or empty string'
+    value: ${{ steps.node.outputs.latest-version }}
   validation-passed:
     description: '"true" or "false" (validate mode only)'
+    value: ${{ steps.node.outputs.validation-passed }}
+  package-path:
+    description: 'Path to the built binary ZIP (build mode only)'
+    value: ${{ steps.build.outputs.package-path }}
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Run sync or validate
+      id: node
+      if: inputs.mode == 'sync' || inputs.mode == 'validate'
+      run: node "${{ github.action_path }}/dist/index.js"
+      shell: bash
+      env:
+        INPUT_MODE: ${{ inputs.mode }}
+        INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
+        INPUT_MAX-VERSIONS: ${{ inputs.max-versions }}
+        INPUT_DRY-RUN: ${{ inputs.dry-run }}
+
+    - name: Build binary
+      id: build
+      if: inputs.mode == 'build'
+      uses: php/pie-ext-binary-builder@v0.0.2
+      with:
+        release-tag: ${{ inputs.release-tag }}
+        github-token: ${{ inputs.github-token }}
+        configure-flags: ${{ inputs.configure-flags }}
+
+    - name: Fail on unknown mode
+      if: inputs.mode != 'sync' && inputs.mode != 'validate' && inputs.mode != 'build'
+      run: |
+        echo "::error::Unknown mode: '${{ inputs.mode }}'. Valid modes: sync, validate, build"
+        exit 1
+      shell: bash

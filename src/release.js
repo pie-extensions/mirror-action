@@ -14,6 +14,10 @@ export async function createRelease(token, version, upstreamTag, config) {
     const octokit = getOctokit(token);
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 
+    // Create as draft when binary building is enabled, so the build-binaries
+    // workflow can upload assets before the release is published.
+    const isDraft = config.build?.enabled === true;
+
     const body = [
         `Synced from upstream release [\`${upstreamTag}\`](https://github.com/${config.upstream.repo}/releases/tag/${upstreamTag}).`,
         '',
@@ -28,10 +32,10 @@ export async function createRelease(token, version, upstreamTag, config) {
             tag_name: version,
             name: version,
             body,
-            draft: false,
+            draft: isDraft,
             prerelease: false,
         });
-        core.info(`Created release ${version}`);
+        core.info(`Created ${isDraft ? 'draft ' : ''}release ${version}`);
     } catch (err) {
         // 422 = release already exists (idempotent on re-run)
         if (err.status === 422) {
