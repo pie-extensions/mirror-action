@@ -20,6 +20,10 @@ inputs:
     description: 'Flags passed to ./configure during build (build mode only)'
     required: false
     default: ''
+  build-path:
+    description: 'Path to extension source directory containing config.m4, relative to repo root (build mode only)'
+    required: false
+    default: '.'
   release-tag:
     description: 'Release tag to upload binary to (build mode only)'
     required: false
@@ -62,6 +66,7 @@ runs:
         release-tag: ${{ inputs.release-tag }}
         github-token: ${{ inputs.github-token }}
         configure-flags: ${{ inputs.configure-flags }}
+        build-path: ${{ inputs.build-path }}
 
     - name: Fail on unknown mode
       if: inputs.mode != 'sync' && inputs.mode != 'validate' && inputs.mode != 'build'
