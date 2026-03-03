@@ -4,6 +4,7 @@ import { readComposerVersion, writeComposerVersion } from './utils/composer.js';
 import { getAllReleaseTags, downloadAndExtractTarball, parseRepo } from './utils/github.js';
 import { filterNewerVersions, isInitialVersion } from './utils/versions.js';
 import { configureGit, commitAndTag, push, resetHard } from './utils/git.js';
+import { runPostExtractHooks } from './utils/hooks.js';
 import { createRelease } from './release.js';
 
 /**
@@ -91,16 +92,24 @@ export async function runSync({ token }) {
             // a. Download and extract source tarball
             await downloadAndExtractTarball(token, owner, repo, tag, sourceDir);
 
-            // b. Update composer.json version
+            // b. Run post-extract hooks (if configured)
+            await runPostExtractHooks({
+                commands: config.hooks['post-extract'],
+                tag,
+                version,
+                sourceDir,
+            });
+
+            // c. Update composer.json version
             writeComposerVersion(version);
 
-            // c. Commit and tag
+            // d. Commit and tag
             await commitAndTag(version, tag);
 
-            // d. Push commit and tag
+            // e. Push commit and tag
             await push(version);
 
-            // e. Create GitHub Release
+            // f. Create GitHub Release
             await createRelease(token, version, tag, config);
 
             synced.push(version);

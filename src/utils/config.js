@@ -29,5 +29,25 @@ export function readConfig(configPath = CONFIG_PATH) {
     config.sync['initial-versions'] = config.sync['initial-versions'] ?? 5;
     config.sync['exclude-tags'] = config.sync['exclude-tags'] ?? [];
 
+    // Hook defaults and validation
+    config.hooks = config.hooks || {};
+    config.hooks['post-extract'] = config.hooks['post-extract'] ?? [];
+
+    if (!Array.isArray(config.hooks['post-extract'])) {
+        throw new Error('.pie-mirror.yml: hooks.post-extract must be an array');
+    }
+    for (const [i, entry] of config.hooks['post-extract'].entries()) {
+        if (typeof entry !== 'string') {
+            throw new Error(
+                `.pie-mirror.yml: hooks.post-extract[${i}] must be a string, got ${typeof entry}`
+            );
+        }
+        if (entry.trim() === '') {
+            throw new Error(
+                `.pie-mirror.yml: hooks.post-extract[${i}] must not be empty`
+            );
+        }
+    }
+
     return config;
 }
