@@ -56,7 +56,7 @@ runs:
     - name: Build binary
       id: build
       if: inputs.mode == 'build'
-      uses: php/pie-ext-binary-builder@v0.0.2
+      uses: php/pie-ext-binary-builder@0.0.2
       with:
         release-tag: ${{ inputs.release-tag }}
         github-token: ${{ inputs.github-token }}
