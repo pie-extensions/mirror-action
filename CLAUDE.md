@@ -13,17 +13,17 @@ Detects all upstream releases newer than the current mirror version and syncs th
 For each new version:
 1. Downloads source tarball from upstream
 2. Extracts to `src/` (replacing previous contents)
-3. Runs post-extract hooks (if configured in `.pie-mirror.yml`)
+3. Runs post-extract hooks (if configured in `.pie-mirror.json`)
 4. Updates `composer.json` version
 5. Commits, tags, and pushes to `main`
 6. Creates a GitHub Release
 
-**Initial sync:** When `composer.json` version is `0.0.0` (freshly created mirror), only the last N versions are synced (default 5, configurable via `sync.initial-versions` in `.pie-mirror.yml`).
+**Initial sync:** When `composer.json` version is `0.0.0` (freshly created mirror), only the last N versions are synced (default 5, configurable via `sync.initial-versions` in `.pie-mirror.json`).
 
 ### `validate`
 
 Checks that the mirror repo is PIE-compliant:
-- `.pie-mirror.yml` has required fields
+- `.pie-mirror.json` has required fields
 - `composer.json` has `type: "php-ext"`, `php-ext.extension-name`, `version`
 - Source directory exists
 
@@ -44,22 +44,28 @@ Checks that the mirror repo is PIE-compliant:
 | `latest-version`    | Highest version synced (or empty)    |
 | `validation-passed` | `"true"` / `"false"` (validate mode) |
 
-## Configuration (`.pie-mirror.yml`)
+## Configuration (`.pie-mirror.json`)
 
-```yaml
-upstream:
-  repo: "phpredis/phpredis"     # Required
-  type: "github"                # Required
-php_ext_name: "redis"           # Required
-source_dir: "src/"              # Optional, default: "src/"
-sync:
-  prereleases: false            # Optional, default: false
-  initial-versions: 5           # Optional, default: 5
-  exclude-tags: []              # Optional, regex patterns to skip
-hooks:
-  post-extract:                 # Optional, commands to run after source extraction
-    - "cp -r deps/ src/"
-    - "node .pie-scripts/fix.js"
+```json
+{
+    "upstream": {
+        "repo": "phpredis/phpredis",
+        "type": "github"
+    },
+    "php_ext_name": "redis",
+    "source_dir": "src/",
+    "sync": {
+        "prereleases": false,
+        "initial-versions": 5,
+        "exclude-tags": []
+    },
+    "hooks": {
+        "post-extract": [
+            "cp -r deps/ src/",
+            "node .pie-scripts/fix.js"
+        ]
+    }
+}
 ```
 
 ### Post-extract hooks
@@ -89,7 +95,7 @@ src/
   release.js        — GitHub Release creation
   validate.js       — PIE compliance checks
   utils/
-    config.js       — reads .pie-mirror.yml
+    config.js       — reads .pie-mirror.json
     composer.js     — reads/writes composer.json
     github.js       — Octokit wrapper, tarball download
     versions.js     — version normalization/comparison

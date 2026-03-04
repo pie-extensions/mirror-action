@@ -1,24 +1,23 @@
 import { readFileSync } from 'fs';
-import yaml from 'js-yaml';
 
-const CONFIG_PATH = '.pie-mirror.yml';
+const CONFIG_PATH = '.pie-mirror.json';
 
 /**
- * Read and validate .pie-mirror.yml from the repo root.
+ * Read and validate .pie-mirror.json from the repo root.
  * Returns the parsed config object with defaults applied.
  */
 export function readConfig(configPath = CONFIG_PATH) {
     const raw = readFileSync(configPath, 'utf-8');
-    const config = yaml.load(raw);
+    const config = JSON.parse(raw);
 
     if (!config?.upstream?.repo) {
-        throw new Error('.pie-mirror.yml: upstream.repo is required');
+        throw new Error('.pie-mirror.json: upstream.repo is required');
     }
     if (!config?.upstream?.type) {
-        throw new Error('.pie-mirror.yml: upstream.type is required');
+        throw new Error('.pie-mirror.json: upstream.type is required');
     }
     if (!config?.php_ext_name) {
-        throw new Error('.pie-mirror.yml: php_ext_name is required');
+        throw new Error('.pie-mirror.json: php_ext_name is required');
     }
 
     // Apply defaults
@@ -34,17 +33,17 @@ export function readConfig(configPath = CONFIG_PATH) {
     config.hooks['post-extract'] = config.hooks['post-extract'] ?? [];
 
     if (!Array.isArray(config.hooks['post-extract'])) {
-        throw new Error('.pie-mirror.yml: hooks.post-extract must be an array');
+        throw new Error('.pie-mirror.json: hooks.post-extract must be an array');
     }
     for (const [i, entry] of config.hooks['post-extract'].entries()) {
         if (typeof entry !== 'string') {
             throw new Error(
-                `.pie-mirror.yml: hooks.post-extract[${i}] must be a string, got ${typeof entry}`
+                `.pie-mirror.json: hooks.post-extract[${i}] must be a string, got ${typeof entry}`
             );
         }
         if (entry.trim() === '') {
             throw new Error(
-                `.pie-mirror.yml: hooks.post-extract[${i}] must not be empty`
+                `.pie-mirror.json: hooks.post-extract[${i}] must not be empty`
             );
         }
     }

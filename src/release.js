@@ -8,7 +8,7 @@ import { getOctokit } from './utils/github.js';
  * @param {string} token - GitHub token
  * @param {string} version - Normalized version string (e.g. "7.4.1")
  * @param {string} upstreamTag - Original upstream tag (e.g. "v7.4.1")
- * @param {object} config - Parsed .pie-mirror.yml
+ * @param {object} config - Parsed .pie-mirror.json
  */
 export async function createRelease(token, version, upstreamTag, config) {
     const octokit = getOctokit(token);

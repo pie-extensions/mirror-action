@@ -13,7 +13,6 @@
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@octokit/rest": "^21.0.0",
-    "js-yaml": "^4.1.0",
     "semver": "^7.6.0"
   },
   "devDependencies": {

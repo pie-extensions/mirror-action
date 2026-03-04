@@ -12,12 +12,12 @@ import { isInitialVersion } from './utils/versions.js';
 export async function runValidate() {
     const errors = [];
 
-    // 1. .pie-mirror.yml exists and is valid
+    // 1. .pie-mirror.json exists and is valid
     let config;
     try {
         config = readConfig();
     } catch (err) {
-        errors.push(`.pie-mirror.yml: ${err.message}`);
+        errors.push(`.pie-mirror.json: ${err.message}`);
     }
 
     // 2. composer.json exists and has required fields
@@ -53,7 +53,7 @@ export async function runValidate() {
             // Cross-validate extension name with config
             if (config && extName && extName !== config.php_ext_name) {
                 errors.push(
-                    `Mismatch: composer.json extension-name="${extName}" vs .pie-mirror.yml php_ext_name="${config.php_ext_name}"`
+                    `Mismatch: composer.json extension-name="${extName}" vs .pie-mirror.json php_ext_name="${config.php_ext_name}"`
                 );
             }
         }

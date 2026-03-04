@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import { exec } from '@actions/exec';
 
 /**
- * Run post-extract hook commands defined in .pie-mirror.yml.
+ * Run post-extract hook commands defined in .pie-mirror.json.
  * Each command is executed via `sh -c` with environment variables:
  *   PIE_SYNC_TAG     - upstream tag (e.g. "v4.29.3")
  *   PIE_SYNC_VERSION - normalized version (e.g. "4.29.3")
