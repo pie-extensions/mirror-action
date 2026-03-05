@@ -34,6 +34,7 @@ export async function createRelease(token, version, upstreamTag, config) {
             body,
             draft: isDraft,
             prerelease: false,
+            make_latest: 'false',
         });
         core.info(`Created ${isDraft ? 'draft ' : ''}release ${version}`);
     } catch (err) {
@@ -44,4 +45,30 @@ export async function createRelease(token, version, upstreamTag, config) {
             throw err;
         }
     }
+}
+
+/**
+ * Mark a release as the "Latest" on GitHub.
+ *
+ * @param {string} token - GitHub token
+ * @param {string} version - Tag / version string of the release to mark
+ */
+export async function markAsLatest(token, version) {
+    const octokit = getOctokit(token);
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+
+    const { data: release } = await octokit.rest.repos.getReleaseByTag({
+        owner,
+        repo,
+        tag: version,
+    });
+
+    await octokit.rest.repos.updateRelease({
+        owner,
+        repo,
+        release_id: release.id,
+        make_latest: 'true',
+    });
+
+    core.info(`Marked release ${version} as latest`);
 }

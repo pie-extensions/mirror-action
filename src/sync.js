@@ -5,7 +5,7 @@ import { getAllReleaseTags, downloadAndExtractTarball, parseRepo } from './utils
 import { filterNewerVersions, isInitialVersion } from './utils/versions.js';
 import { configureGit, commitAndTag, push, resetHard } from './utils/git.js';
 import { runPostExtractHooks } from './utils/hooks.js';
-import { createRelease } from './release.js';
+import { createRelease, markAsLatest } from './release.js';
 
 /**
  * Multi-version sync: fetch all missing upstream releases and process them
@@ -121,6 +121,15 @@ export async function runSync({ token }) {
             break;
         }
         core.endGroup();
+    }
+
+    // Mark the highest synced version as "Latest" on GitHub — but only when
+    // releases are non-draft (builds disabled). When builds are enabled the
+    // publish step in build-binaries.yml handles this after un-drafting.
+    const buildEnabled = config.build?.enabled === true;
+    if (synced.length > 0 && !buildEnabled) {
+        const highest = synced[synced.length - 1];
+        await markAsLatest(token, highest);
     }
 
     core.setOutput('synced-versions', JSON.stringify(synced));
