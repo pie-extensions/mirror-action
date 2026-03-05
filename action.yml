@@ -3,7 +3,7 @@ description: 'Sync, validate, build, and release PIE-compatible PHP extension mi
 
 inputs:
   mode:
-    description: 'Action mode: sync | validate | build'
+    description: 'Action mode: sync | validate | build | resolve-matrix'
     required: true
   github-token:
     description: 'GitHub token with contents:write permission'
@@ -42,13 +42,22 @@ outputs:
   package-path:
     description: 'Path to the built binary ZIP (build mode only)'
     value: ${{ steps.build.outputs.package-path }}
+  enabled:
+    description: '"true" or "false" — whether builds are enabled (resolve-matrix mode only)'
+    value: ${{ steps.node.outputs.enabled }}
+  matrix:
+    description: 'JSON build matrix object (resolve-matrix mode only)'
+    value: ${{ steps.node.outputs.matrix }}
+  build-path:
+    description: 'Resolved build path (resolve-matrix mode only)'
+    value: ${{ steps.node.outputs.build-path }}
 
 runs:
   using: 'composite'
   steps:
     - name: Run sync or validate
       id: node
-      if: inputs.mode == 'sync' || inputs.mode == 'validate'
+      if: inputs.mode == 'sync' || inputs.mode == 'validate' || inputs.mode == 'resolve-matrix'
       run: node "${{ github.action_path }}/dist/index.js"
       shell: bash
       env:
@@ -56,6 +65,7 @@ runs:
         INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
         INPUT_MAX-VERSIONS: ${{ inputs.max-versions }}
         INPUT_DRY-RUN: ${{ inputs.dry-run }}
+        INPUT_RELEASE-TAG: ${{ inputs.release-tag }}
 
     - name: Build binary
       id: build
@@ -69,8 +79,8 @@ runs:
         build-path: ${{ inputs.build-path }}
 
     - name: Fail on unknown mode
-      if: inputs.mode != 'sync' && inputs.mode != 'validate' && inputs.mode != 'build'
+      if: inputs.mode != 'sync' && inputs.mode != 'validate' && inputs.mode != 'build' && inputs.mode != 'resolve-matrix'
       run: |
-        echo "::error::Unknown mode: '${{ inputs.mode }}'. Valid modes: sync, validate, build"
+        echo "::error::Unknown mode: '${{ inputs.mode }}'. Valid modes: sync, validate, build, resolve-matrix"
         exit 1
       shell: bash

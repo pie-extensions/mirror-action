@@ -55,6 +55,31 @@ export function readConfig(configPath = CONFIG_PATH) {
     config.build.arches = config.build.arches ?? ['x86_64', 'arm64'];
     config.build['php-versions'] = config.build['php-versions'] ?? ['8.2', '8.3', '8.4', '8.5'];
     config.build.zts = config.build.zts ?? ['nts', 'ts'];
+    config.build['php-version-constraints'] = config.build['php-version-constraints'] ?? [];
+
+    // Validate php-version-constraints structure
+    if (!Array.isArray(config.build['php-version-constraints'])) {
+        throw new Error('.pie-mirror.json: build.php-version-constraints must be an array');
+    }
+    for (const [i, entry] of config.build['php-version-constraints'].entries()) {
+        if (typeof entry['ext-versions'] !== 'string' || !entry['ext-versions']) {
+            throw new Error(
+                `.pie-mirror.json: build.php-version-constraints[${i}].ext-versions must be a non-empty string`
+            );
+        }
+        if (!Array.isArray(entry['php-versions']) || entry['php-versions'].length === 0) {
+            throw new Error(
+                `.pie-mirror.json: build.php-version-constraints[${i}].php-versions must be a non-empty array`
+            );
+        }
+        for (const [j, v] of entry['php-versions'].entries()) {
+            if (typeof v !== 'string') {
+                throw new Error(
+                    `.pie-mirror.json: build.php-version-constraints[${i}].php-versions[${j}] must be a string`
+                );
+            }
+        }
+    }
 
     return config;
 }

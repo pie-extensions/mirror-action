@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import { runSync } from './sync.js';
 import { runValidate } from './validate.js';
+import { runResolveMatrix } from './resolve-matrix.js';
 
 async function main() {
     const mode = core.getInput('mode', { required: true });
@@ -13,8 +14,11 @@ async function main() {
         case 'validate':
             await runValidate();
             break;
+        case 'resolve-matrix':
+            await runResolveMatrix();
+            break;
         default:
-            core.setFailed(`Unknown mode: "${mode}". Valid modes: sync, validate`);
+            core.setFailed(`Unknown mode: "${mode}". Valid modes: sync, validate, resolve-matrix`);
     }
 }
 
