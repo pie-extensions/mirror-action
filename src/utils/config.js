@@ -53,9 +53,9 @@ export function readConfig(configPath = CONFIG_PATH) {
     config.build.enabled = config.build.enabled ?? false;
     config.build.os = config.build.os ?? ['linux', 'darwin'];
     config.build.arches = config.build.arches ?? ['x86_64', 'arm64'];
-    config.build['php-versions'] = config.build['php-versions'] ?? ['8.2', '8.3', '8.4', '8.5'];
     config.build.zts = config.build.zts ?? ['nts', 'ts'];
-    config.build['php-version-constraints'] = config.build['php-version-constraints'] ?? [];
+    config.build['php-version-constraints'] = config.build['php-version-constraints']
+        ?? [{ 'ext-versions': '*', 'php-versions': ['8.2', '8.3', '8.4', '8.5'] }];
 
     // Validate php-version-constraints structure
     if (!Array.isArray(config.build['php-version-constraints'])) {

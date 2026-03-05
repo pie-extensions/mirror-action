@@ -1,27 +1,31 @@
 import * as semver from 'semver';
 
 /**
- * Resolve PHP versions for a given extension version based on
- * php-version-constraints. First matching constraint wins.
- * Falls back to the default build.php-versions if no constraint matches.
+ * Resolve PHP versions for a given extension version using php-version-constraints.
+ * First matching constraint wins. Throws if no constraint matches.
  *
  * @param {string} extVersion - Extension version (tag), e.g. "10.1.0" or "v1.2.3"
  * @param {object} buildConfig - The build section of .pie-mirror.json
  * @returns {string[]} PHP versions to build for
  */
 export function resolvePhpVersions(extVersion, buildConfig) {
-    const constraints = buildConfig['php-version-constraints'] ?? [];
+    const constraints = buildConfig['php-version-constraints'];
     const coerced = semver.coerce(extVersion);
 
-    if (coerced && constraints.length > 0) {
-        for (const constraint of constraints) {
-            if (semver.satisfies(coerced, constraint['ext-versions'])) {
-                return constraint['php-versions'];
-            }
+    if (!coerced) {
+        throw new Error(`Cannot coerce "${extVersion}" to semver`);
+    }
+
+    for (const constraint of constraints) {
+        if (semver.satisfies(coerced, constraint['ext-versions'])) {
+            return constraint['php-versions'];
         }
     }
 
-    return buildConfig['php-versions'];
+    throw new Error(
+        `No php-version-constraint matches "${extVersion}" (coerced: ${coerced}). ` +
+        `Defined ranges: ${constraints.map(c => c['ext-versions']).join(', ')}`
+    );
 }
 
 /**
@@ -47,6 +51,20 @@ export function resolveMatrix(extVersion, config) {
         php: phpVersions,
         zts: build.zts,
     };
+
+    // Validate every matrix dimension is an array of scalars
+    for (const [key, value] of Object.entries(matrix)) {
+        if (!Array.isArray(value)) {
+            throw new Error(`Build matrix "${key}" must be an array, got ${typeof value}`);
+        }
+        for (const [i, item] of value.entries()) {
+            if (typeof item !== 'string' && typeof item !== 'number') {
+                throw new Error(
+                    `Build matrix "${key}[${i}]" must be a string or number, got ${typeof item}`
+                );
+            }
+        }
+    }
 
     const rawBuildPath = build['build-path'] ?? '.';
     const sourceDir = config.source_dir ?? 'src/';

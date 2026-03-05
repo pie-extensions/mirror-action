@@ -10,15 +10,19 @@ export async function runResolveMatrix() {
     const releaseTag = core.getInput('release-tag', { required: true });
 
     const config = readConfig();
+    core.debug(`Config build section: ${JSON.stringify(config.build)}`);
+
     const result = resolveMatrix(releaseTag, config);
 
     core.setOutput('enabled', String(result.enabled));
     core.setOutput('release-tag', releaseTag);
 
     if (result.enabled) {
-        core.setOutput('matrix', JSON.stringify(result.matrix));
+        const matrixJson = JSON.stringify(result.matrix);
+        core.setOutput('matrix', matrixJson);
         core.setOutput('build-path', result.buildPath);
-        core.info(`Build matrix resolved for ${releaseTag}: ${JSON.stringify(result.matrix)}`);
+        core.info(`Build matrix resolved for ${releaseTag}: ${matrixJson}`);
+        core.info(`Build path: ${result.buildPath}`);
     } else {
         core.info('Build is not enabled for this extension');
     }
