@@ -70,8 +70,7 @@ runs:
     - name: Build binary
       id: build
       if: inputs.mode == 'build'
-      # TODO: temporary fork, switch back to php/pie-ext-binary-builder@0.0.2
-      uses: hotrush/pie-ext-binary-builder@main
+      uses: pie-extension/pie-ext-binary-builder@v1
       with:
         release-tag: ${{ inputs.release-tag }}
         github-token: ${{ inputs.github-token }}
