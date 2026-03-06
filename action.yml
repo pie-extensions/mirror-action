@@ -70,7 +70,7 @@ runs:
     - name: Build binary
       id: build
       if: inputs.mode == 'build'
-      uses: pie-extension/pie-ext-binary-builder@v1
+      uses: pie-extensions/pie-ext-binary-builder@v1
       with:
         release-tag: ${{ inputs.release-tag }}
         github-token: ${{ inputs.github-token }}
