@@ -62,6 +62,9 @@ outputs:
   configure-flags:
     description: 'Configure flags from .pie-mirror.json (resolve-matrix mode only)'
     value: ${{ steps.node.outputs.configure-flags }}
+  apk-packages:
+    description: 'Additional Alpine packages from .pie-mirror.json (resolve-matrix mode only)'
+    value: ${{ steps.node.outputs.apk-packages }}
 
 runs:
   using: 'composite'
