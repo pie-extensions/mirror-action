@@ -51,6 +51,9 @@ outputs:
   build-path:
     description: 'Resolved build path (resolve-matrix mode only)'
     value: ${{ steps.node.outputs.build-path }}
+  configure-flags:
+    description: 'Configure flags from .pie-mirror.json (resolve-matrix mode only)'
+    value: ${{ steps.node.outputs.configure-flags }}
 
 runs:
   using: 'composite'

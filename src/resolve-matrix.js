@@ -21,8 +21,12 @@ export async function runResolveMatrix() {
         const matrixJson = JSON.stringify(result.matrix);
         core.setOutput('matrix', matrixJson);
         core.setOutput('build-path', result.buildPath);
+        core.setOutput('configure-flags', config.build['configure-flags']);
         core.info(`Build matrix resolved for ${releaseTag}: ${matrixJson}`);
         core.info(`Build path: ${result.buildPath}`);
+        if (config.build['configure-flags']) {
+            core.info(`Configure flags: ${config.build['configure-flags']}`);
+        }
     } else {
         core.info('Build is not enabled for this extension');
     }

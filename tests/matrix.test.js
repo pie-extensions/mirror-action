@@ -130,6 +130,7 @@ describe('resolveMatrix', () => {
             os: ['linux', 'darwin'],
             arches: ['x86_64', 'arm64'],
             zts: ['nts', 'ts'],
+            libc: ['glibc', 'musl'],
             'php-version-constraints': [
                 { 'ext-versions': '*', 'php-versions': ['8.2', '8.3', '8.4'] },
             ],
@@ -147,12 +148,24 @@ describe('resolveMatrix', () => {
     it('returns full matrix with wildcard constraint', () => {
         const result = resolveMatrix('1.0.0', baseConfig);
         assert.equal(result.enabled, true);
-        assert.deepEqual(result.matrix, {
-            os: ['linux', 'darwin'],
-            arch: ['x86_64', 'arm64'],
-            php: ['8.2', '8.3', '8.4'],
-            zts: ['nts', 'ts'],
-        });
+
+        // Matrix uses includes format with libc dimension
+        assert.ok(Array.isArray(result.matrix.include));
+
+        // Linux entries should have glibc and musl variants
+        const linuxEntries = result.matrix.include.filter(e => e.os === 'linux');
+        const linuxGlibc = linuxEntries.filter(e => e.libc === 'glibc');
+        const linuxMusl = linuxEntries.filter(e => e.libc === 'musl');
+        assert.equal(linuxGlibc.length, linuxMusl.length);
+        assert.ok(linuxGlibc.length > 0);
+
+        // Darwin entries should always be bsdlibc
+        const darwinEntries = result.matrix.include.filter(e => e.os === 'darwin');
+        assert.ok(darwinEntries.every(e => e.libc === 'bsdlibc'));
+        assert.ok(darwinEntries.length > 0);
+
+        // Total: linux(2 arches * 3 php * 2 zts * 2 libc) + darwin(2 arches * 3 php * 2 zts * 1 libc)
+        assert.equal(result.matrix.include.length, 24 + 12);
     });
 
     it('uses version-specific constraint when matching', () => {
@@ -167,7 +180,8 @@ describe('resolveMatrix', () => {
             },
         };
         const result = resolveMatrix('10.1.0', config);
-        assert.deepEqual(result.matrix.php, ['8.2', '8.3', '8.4', '8.5']);
+        const phpVersions = [...new Set(result.matrix.include.map(e => e.php))];
+        assert.deepEqual(phpVersions, ['8.2', '8.3', '8.4', '8.5']);
     });
 
     it('resolves build-path with source_dir prefix (default build-path)', () => {
@@ -182,6 +196,37 @@ describe('resolveMatrix', () => {
         };
         const result = resolveMatrix('1.0.0', config);
         assert.equal(result.buildPath, 'src/ext/redis');
+    });
+
+    it('supports custom libc config (glibc only)', () => {
+        const config = {
+            ...baseConfig,
+            build: { ...baseConfig.build, libc: ['glibc'] },
+        };
+        const result = resolveMatrix('1.0.0', config);
+        const linuxEntries = result.matrix.include.filter(e => e.os === 'linux');
+        assert.ok(linuxEntries.every(e => e.libc === 'glibc'));
+        assert.equal(linuxEntries.filter(e => e.libc === 'musl').length, 0);
+    });
+
+    it('linux-only build includes libc variants, no bsdlibc', () => {
+        const config = {
+            ...baseConfig,
+            build: { ...baseConfig.build, os: ['linux'] },
+        };
+        const result = resolveMatrix('1.0.0', config);
+        const libcValues = [...new Set(result.matrix.include.map(e => e.libc))];
+        assert.deepEqual(libcValues.sort(), ['glibc', 'musl']);
+        assert.equal(result.matrix.include.filter(e => e.libc === 'bsdlibc').length, 0);
+    });
+
+    it('darwin-only build uses bsdlibc only', () => {
+        const config = {
+            ...baseConfig,
+            build: { ...baseConfig.build, os: ['darwin'] },
+        };
+        const result = resolveMatrix('1.0.0', config);
+        assert.ok(result.matrix.include.every(e => e.libc === 'bsdlibc'));
     });
 
     it('resolves build-path with trailing slash on source_dir', () => {

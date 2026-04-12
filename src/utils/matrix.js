@@ -45,15 +45,15 @@ export function resolveMatrix(extVersion, config) {
 
     const phpVersions = resolvePhpVersions(extVersion, build);
 
-    const matrix = {
+    // Validate source dimensions before building includes
+    const dimensions = {
         os: build.os,
         arch: build.arches,
         php: phpVersions,
         zts: build.zts,
+        libc: build.libc,
     };
-
-    // Validate every matrix dimension is an array of scalars
-    for (const [key, value] of Object.entries(matrix)) {
+    for (const [key, value] of Object.entries(dimensions)) {
         if (!Array.isArray(value)) {
             throw new Error(`Build matrix "${key}" must be an array, got ${typeof value}`);
         }
@@ -65,6 +65,23 @@ export function resolveMatrix(extVersion, config) {
             }
         }
     }
+
+    // Build includes list: darwin always uses bsdlibc, linux uses configured libc variants
+    const include = [];
+    for (const os of build.os) {
+        const libcVariants = os === 'darwin' ? ['bsdlibc'] : build.libc;
+        for (const arch of build.arches) {
+            for (const php of phpVersions) {
+                for (const zts of build.zts) {
+                    for (const libc of libcVariants) {
+                        include.push({ os, arch, php, zts, libc });
+                    }
+                }
+            }
+        }
+    }
+
+    const matrix = { include };
 
     const rawBuildPath = build['build-path'] ?? '.';
     const sourceDir = config.source_dir ?? 'src/';
