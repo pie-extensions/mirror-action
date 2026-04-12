@@ -22,6 +22,7 @@ export async function runResolveMatrix() {
         core.setOutput('matrix', matrixJson);
         core.setOutput('build-path', result.buildPath);
         core.setOutput('configure-flags', config.build['configure-flags']);
+        core.setOutput('apk-packages', config.build['apk-packages']);
         core.info(`Build matrix resolved for ${releaseTag}: ${matrixJson}`);
         core.info(`Build path: ${result.buildPath}`);
         if (config.build['configure-flags']) {

@@ -56,6 +56,7 @@ export function readConfig(configPath = CONFIG_PATH) {
     config.build.zts = config.build.zts ?? ['nts', 'ts'];
     config.build.libc = config.build.libc ?? ['glibc', 'musl'];
     config.build['configure-flags'] = config.build['configure-flags'] ?? '';
+    config.build['apk-packages'] = config.build['apk-packages'] ?? '';
     config.build['php-version-constraints'] = config.build['php-version-constraints']
         ?? [{ 'ext-versions': '*', 'php-versions': ['8.2', '8.3', '8.4', '8.5'] }];
 

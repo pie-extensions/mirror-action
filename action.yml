@@ -32,6 +32,10 @@ inputs:
     description: 'Docker image to run the build inside (e.g. php:8.2-cli-alpine). When set, build and PHP detection run inside this container via docker run. (build mode only)'
     required: false
     default: ''
+  apk-packages:
+    description: 'Additional Alpine packages for Docker builds (space-separated, build mode only)'
+    required: false
+    default: ''
 
 outputs:
   synced-versions:
@@ -84,6 +88,7 @@ runs:
         configure-flags: ${{ inputs.configure-flags }}
         build-path: ${{ inputs.build-path }}
         docker-image: ${{ inputs.docker-image }}
+        apk-packages: ${{ inputs.apk-packages }}
 
     - name: Fail on unknown mode
       if: inputs.mode != 'sync' && inputs.mode != 'validate' && inputs.mode != 'build' && inputs.mode != 'resolve-matrix'
